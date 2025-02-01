@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Red Light, Green Light Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        .game-container {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            background-color: green;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .character, .guard {
+            position: absolute;
+            bottom: 10vh;
+            width: 0;
+            height: 0;
+            border-left: 25px solid transparent;
+            border-right: 25px solid transparent;
+            border-bottom: 50px solid yellow;
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+        }
+        .guard {
+            right: 5vw;
+            border-bottom-color: purple;
+        }
+        .character {
+            left: 5vw;
+            border-bottom-color: yellow;
+        }
+        .energy-bar {
+            position: absolute;
+            bottom: 5vh;
+            left: 5vw;
+            width: 40vw;
+            height: 3vh;
+            background-color: #ddd;
+        }
+        .energy-level {
+            height: 100%;
+            background-color: green;
+        }
+        .question-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 5vh;
+            display: none;
+            text-align: center;
+            width: 40vw;
+        }
+        .question-container button {
+            display: block;
+            margin: 2vh;
+        }
+        .control-circle {
+            position: absolute;
+            top: 50%;
+            right: 5vw;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: red;
+            transition: background-color 0.3s ease;
+        }
+        .energy-display {
+            position: absolute;
+            bottom: 2vh;
+            left: 5vw;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 20px;
+            font-size: 18px;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="character" id="character"></div>
+        <div class="guard" id="guard"></div>
+        <div class="energy-bar">
+            <div class="energy-level" id="energyLevel"></div>
+        </div>
+        <div class="question-container" id="questionContainer">
+            <h2 id="questionText"></h2>
+            <button onclick="answerQuestion(0)">Option 1</button>
+            <button onclick="answerQuestion(1)">Option 2</button>
+            <button onclick="answerQuestion(2)">Option 3</button>
+            <button onclick="answerQuestion(3)">Option 4</button>
+            <button onclick="closeQuestion()">Close</button>
+        </div>
+        <div class="control-circle" id="controlCircle"></div>
+        <div class="energy-display" id="energyDisplay">Energy: 0</div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "Definition of matilia",
+                options: ["groups of soldiers trained to fight in emergencies", "redcoats", "people that boast about being ready to fight", "supported the war"],
+                correctAnswer: "groups of soldiers trained to fight in emergencies"
+            },
+            {
+                question: "Definition of minutemen",
+                options: ["People who boast about being ready to fight", "groups of citizen soldiers trained to fight", "those who chose to stay with Britain and oppose the war", "Colonists who supported the war for independence"],
+                correctAnswer: "People who boast about being ready to fight"
+            },
+            {
+                question: "Definition of loyalist",
+                options: ["groups of citizens soldiers trained to fight in emergencies", "people who boast about being ready to fight", "those who chose to stay with Britain and oppose the war", "Colonists who supported the war for independence"],
+                correctAnswer: "those who chose to stay with Britain and oppose the war"
+            },
+            {
+                question: "Definition of patriot",
+                options: ["groups of citizens soldiers trained to fight in emergencies", "people who boast about being ready to fight", "those who chose to stay with Britain and oppose the war", "Colonists who supported the war for independence"],
+                correctAnswer: "Colonists who supported the war for independence"
+            },
+            {
+                question: "When was the continental congress made",
+                options: ["September 1774", "March 1770","Dec 1773", "September 2029"],
+                correctAnswer: "September 1774"
+            },
+            {
+                question: "Where was the continental congress made",
+                options: ["Boston", "Philiadelphia", "Britain", "Bunker hill"],
+                correctAnswer: "Philiadelphia"
+            },
+            {
+                question: "How many delegets were in the Continental congress",
+                options: ["5", "65", "53", "55"],
+                correctAnswer: "55"
+            },
+            {
+                question: "The Continenal congress was a _______ ________",
+                options: ["political body", "judicial", "french and indian war", "goverment"],
+                correctAnswer: "political body"
+            },
+            {
+                question: "The Continental congress drafted a stament that called for the ",
+                options: ["repeal of 13 acts", "call of the tea act", "freedom", "low mollaisis tax"],
+                correctAnswer: "repeal of 13 acts"
+            },
+            {
+                question: "what did the continental congress try to boycott",
+                options: ["british trade", "yarn and other supllies", "tea", "tesla cyber truck"],
+                correctAnswer: "british trade"
+            },
+            {
+                question: "Ban the selling of what in the colonies",
+                options: ["colonial goods", " british goods", "ammunition", "tea"],
+                correctAnswer: "colonial goods"
+            },
+            {
+                question: "Endorsing the Suffolk Revsolves creates conlonial _______ .",
+                options: ["malitain", "peace", "ammunition", "red coat policies"],
+                correctAnswer: "malitain"
+            },
+            {
+                question: "Who led the American troops and the Green Mountain Boys to capture Fort Ticonderoga",
+                options: ["Benedict Arnold", "Steven Hawking", "Pual revere", "volenteers"],
+                correctAnswer: "Benedict Arnold"
+            },
+            {
+                question: "Why was Fort Ticonderoga so important",
+                options: ["Rich milliraty supplies", "very rich in cash", "Elon Musks wallet", "good defence spot"],
+                correctAnswer: "Rich milliraty supplies"
+            },
+            {
+                question: "How did the Amercian forces grow so large",
+                options: ["calls for volunteers", "bribery", "determination", "took in millitary from other colonies"],
+                correctAnswer: "calls for volunteers"
+            },
+            {
+                question: "Why was Bunker Hill such an important battle eraly in the war",
+                options: ["Even though Americans lost the british suffered from great lost", "Even though Britishers lost the Americans suffered from great lost", "Even though Americans lost the Americans suffered from great lost", "Even though Britishens lost the british suffered from great lost"],
+                correctAnswer: "Even though Americans lost the british suffered from great lost"
+            },
+            {
+                question: "Why was the American Revolutions considered a civil war",
+                options: ["Patriots vs. Loylists", "British vs. Americans", "Boston vs. Massachusetts", "The groovy people vs. the non groovy people"],
+                correctAnswer: "Patriots vs. Loylists"
+            },
+            {
+                question: "Matilia companies in _________ held frequent _________ _____________",
+                options: ["Massachussets, training sessions", "Boston, training sessions", "Massachussets,defence practice", "Boston, defence practice"],
+                correctAnswer: "Massachussets, training sessions"
+            },
+            {
+                question: "Malitia copanies in Massachussests help frequest training sessions, made __________, and stockpiled __________, and ____________",
+                options: ["bullets, rifels, muskets", "jewls, money,ammunition ", "bullets, fabrics, other valuables", "people groovy, grooviness, suer grooviness"],
+                correctAnswer: "bullets, rifels, muskets"
+            },
+            {
+                question: "who stated that the new england colonies where in a state of rebellion.",
+                options: ["King George", "Red coats", "Malitia", "The groovy people"],
+                correctAnswer: "King George"
+            },
+            {
+                question: "what decides who will contorl america",
+                options: ["blows", "money", "power", "determination"],
+                correctAnswer: "blows"
+            },
+            {
+                question: "Several thousand soldiers were around _____ and many more were on their way.",
+                options: ["Boston", "Philediphia", "Massachussets", "Bunker hill"],
+                correctAnswer: "Boston"
+            },
+            {
+                question: "Who had the instructions to take away the weapons of the mass militia and arrest the leaders",
+                options: ["King george", "Tomas Gage", "Paul revere", "Allan"],
+                correctAnswer: "Tomas Gage"
+            },
+            {
+                question: "Why was the American Revolutions considered a civil war",
+                options: ["Patriots vs. Loylists", "British vs. Americans", "Boston vs. Massachusetts", "The groovy people vs. the non groovy people"],
+                correctAnswer: "Patriots vs. Loylists"
+            },
+            {
+                question: "Why was the American Revolutions considered a civil war",
+                options: ["Patriots vs. Loylists", "British vs. Americans", "Boston vs. Massachusetts", "The groovy people vs. the non groovy people"],
+                correctAnswer: "Patriots vs. Loylists"
+            },
+            {
+                question: "Why was the American Revolutions considered a civil war",
+                options: ["Patriots vs. Loylists", "British vs. Americans", "Boston vs. Massachusetts", "The groovy people vs. the non groovy people"],
+                correctAnswer: "Patriots vs. Loylists"
+            },
+            {
+                question: "Why was the American Revolutions considered a civil war",
+                options: ["Patriots vs. Loylists", "British vs. Americans", "Boston vs. Massachusetts", "The groovy people vs. the non groovy people"],
+                correctAnswer: "Patriots vs. Loylists"
+            },
+            {
+                question: "Why was the American Revolutions considered a civil war",
+                options: ["Patriots vs. Loylists", "British vs. Americans", "Boston vs. Massachusetts", "The groovy people vs. the non groovy people"],
+                correctAnswer: "Patriots vs. Loylists"
+            },
+            {
+                question: "Why was the American Revolutions considered a civil war",
+                options: ["Patriots vs. Loylists", "British vs. Americans", "Boston vs. Massachusetts", "The groovy people vs. the non groovy people"],
+                correctAnswer: "Patriots vs. Loylists"
+            },
+            {
+                question: "Why was the American Revolutions considered a civil war",
+                options: ["Patriots vs. Loylists", "British vs. Americans", "Boston vs. Massachusetts", "The groovy people vs. the non groovy people"],
+                correctAnswer: "Patriots vs. Loylists"
+            }        ];
+
+        let energy = 0;
+        let currentQuestionIndex = 0;
+        let canMove = false;
+        let characterPosition = 5;
+        let isOut = false;
+        let isMoving = false;
+
+        const character = document.getElementById('character');
+        const energyLevel = document.getElementById('energyLevel');
+        const questionContainer = document.getElementById('questionContainer');
+        const questionText = document.getElementById('questionText');
+        const buttons = questionContainer.querySelectorAll('button');
+        const controlCircle = document.getElementById('controlCircle');
+        const energyDisplay = document.getElementById('energyDisplay');
+
+        // Function to shuffle the answer options
+        function shuffleOptions(options) {
+            for (let i = options.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [options[i], options[j]] = [options[j], options[i]];
+            }
+            return options;
+        }
+
+        // Function to shuffle the questions array
+        function shuffleQuestions() {
+            for (let i = questions.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [questions[i], questions[j]] = [questions[j], questions[i]];
+            }
+        }
+
+        // Shuffle questions when the game starts
+        shuffleQuestions();
+
+        // Function to move character based on energy
+        function moveCharacter() {
+            if (isMoving || energy <= 0) return;
+            isMoving = true;
+
+            characterPosition += 1;
+            character.style.left = `${characterPosition}vw`;
+
+            energy -= 1;
+            updateEnergyDisplay();
+
+            setTimeout(() => {
+                isMoving = false;
+            }, 200);
+        }
+
+        // Function to handle answering questions
+        function answerQuestion(optionIndex) {
+            if (isOut) return;
+
+            if (buttons[optionIndex].textContent === questions[currentQuestionIndex].correctAnswer) {
+                energy += 1;
+                alert("Correct! You gained energy.");
+                updateEnergyDisplay();
+            } else {
+                alert("Incorrect. No energy gained.");
+            }
+
+            energyLevel.style.width = `${(energy / 100)}%`;
+            closeQuestion();
+        }
+
+        // Function to update the energy display box
+        function updateEnergyDisplay() {
+            energyDisplay.textContent = `Energy: ${energy}`;
+        }
+
+        // Function to open a new question
+        function openQuestion() {
+            const currentQuestion = questions[currentQuestionIndex];
+            questionText.textContent = currentQuestion.question;
+
+            const shuffledOptions = shuffleOptions([...currentQuestion.options]);
+            shuffledOptions.forEach((option, index) => {
+                buttons[index].textContent = option;
+            });
+
+            questionContainer.style.display = 'block';
+        }
+
+        // Function to close the question dialog and move to the next question
+        function closeQuestion() {
+            questionContainer.style.display = 'none';
+            currentQuestionIndex = (currentQuestionIndex + 1) % questions.length;
+        }
+
+        // Toggle the control circle between red and green
+        function toggleControlCircle() {
+            const greenDuration = 1000; // 7 seconds for green light
+            const redDuration = 200; // 3 seconds for red light
+
+            canMove = !canMove;
+            controlCircle.style.backgroundColor = canMove ? 'green' : 'red';
+
+            setTimeout(() => {
+                toggleControlCircle();
+            }, greenDuration + redDuration);
+        }
+
+        // Start the game by opening the first randomized question
+        setTimeout(() => {
+            openQuestion();
+        }, 1000);
+
+        // Listen for spacebar press to move the character
+        window.addEventListener('keydown', (event) => {
+            if (event.key === ' ' && !isOut) {
+                if (energy > 0 && canMove) {
+                    moveCharacter();
+                } else if (energy > 0 && !canMove) {
+                    alert("You moved during red light! You are out.");
+                    isOut = true;
+                    characterPosition = 5;
+                    character.style.left = `${characterPosition}vw`;
+                    updateEnergyDisplay();
+                }
+            } else if (event.key === ' ' && isOut) {
+                characterPosition = 5;
+                character.style.left = `${characterPosition}vw`;
+                isOut = false;
+            }
+        });
+
+        // Listen for the 'Q' key to answer questions
+        window.addEventListener('keydown', (event) => {
+            if (event.key === 'q' || event.key === 'Q') {
+                openQuestion();
+            }
+        });
+
+        // Initialize the game
+        toggleControlCircle();
+    </script>
+</body>
+</html>
